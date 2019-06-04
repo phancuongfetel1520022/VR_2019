@@ -59,13 +59,13 @@ volatile uint32_t hal_timestamp = 0;
 
 /* Private variables ---------------------------------------------------------*/
 
-	uint8_t rx_buffer[256],rx_index,rx_data;
-	
-	char str[45];
-	long data[4];
+    uint8_t rx_buffer[256],rx_index,rx_data;
+    
+    char str[45];
+    long data[4];
 
-	uint16_t a=123,b=345,c=567,d=789;
-	uint8_t status=1;
+    uint16_t a=123,b=345,c=567,d=789;
+    uint8_t status=1;
 
 
 struct rx_s {
@@ -75,9 +75,9 @@ struct rx_s {
 
 struct hal_s {
     unsigned char lp_accel_mode;
-	
+    
     unsigned char sensors;
-	
+    
     unsigned char dmp_on;
     unsigned char wait_for_tap;
     volatile unsigned char new_gyro;
@@ -154,6 +154,7 @@ static struct platform_data_s compass_pdata = {
 
 I2C_HandleTypeDef hi2c2;
 SPI_HandleTypeDef hspi3;
+DMA_HandleTypeDef hdma_usart1_rx;
 UART_HandleTypeDef huart1;
 UART_HandleTypeDef huart2;
 
@@ -172,27 +173,27 @@ UART_HandleTypeDef huart2;
 static void read_from_mpl(void)
 {
     long msg;
-	//long msg, data[9];
+    //long msg, data[9];
     int8_t accuracy;
     unsigned long timestamp;
     float float_data[3] = {0};
 
     if (inv_get_sensor_type_quat(data, &accuracy, (inv_time_t*)&timestamp))
-			{
-				
+            {
+                
        /* Sends a quaternion packet to the PC. Since this is used by the Python
         * test app to visually represent a 3D quaternion, it's sent each time
         * the MPL has new data.
         */
-				
-				eMPL_send_quat(data);
+                
+                eMPL_send_quat(data);
 
         /* Specific data packets can be sent or suppressed using USB commands. */
         if (hal.report & PRINT_QUAT)
             eMPL_send_data(PACKET_DATA_QUAT, data);
-			}
+            }
 
-			
+            
     if (hal.report & PRINT_ACCEL) {
         if (inv_get_sensor_type_accel(data, &accuracy,(inv_time_t*)&timestamp))
             eMPL_send_data(PACKET_DATA_ACCEL, data);
@@ -221,20 +222,20 @@ static void read_from_mpl(void)
     }
     if (hal.report & PRINT_LINEAR_ACCEL) {
         if (inv_get_sensor_type_linear_acceleration(float_data, &accuracy, (inv_time_t*)&timestamp)) {
-        	MPL_LOGI("Linear Accel: %7.5f %7.5f %7.5f\r\n",
-        			float_data[0], float_data[1], float_data[2]);                                        
+            MPL_LOGI("Linear Accel: %7.5f %7.5f %7.5f\r\n",
+                    float_data[0], float_data[1], float_data[2]);                                        
          }
     }
     if (hal.report & PRINT_GRAVITY_VECTOR) {
             if (inv_get_sensor_type_gravity(float_data, &accuracy,(inv_time_t*)&timestamp))
-            	MPL_LOGI("Gravity Vector: %7.5f %7.5f %7.5f\r\n",
-            			float_data[0], float_data[1], float_data[2]);
+                MPL_LOGI("Gravity Vector: %7.5f %7.5f %7.5f\r\n",
+                        float_data[0], float_data[1], float_data[2]);
     }
     if (hal.report & PRINT_PEDO) {
 
-			unsigned long timestamp;
-			
-				//timestamp=HAL_GetTick();
+            unsigned long timestamp;
+            
+                //timestamp=HAL_GetTick();
         get_tick_count(&timestamp);
         if (timestamp > hal.next_pedo_ms) {
             hal.next_pedo_ms = timestamp + PEDO_READ_MS;
@@ -262,13 +263,13 @@ static void read_from_mpl(void)
 
 #ifdef COMPASS_ENABLED
 void send_status_compass() {
-	long data[3] = { 0 };
-	int8_t accuracy = { 0 };
-	unsigned long timestamp;
-	inv_get_compass_set(data, &accuracy, (inv_time_t*) &timestamp);
-	MPL_LOGI("Compass: %7.4f %7.4f %7.4f ",
-			data[0]/65536.f, data[1]/65536.f, data[2]/65536.f);
-	MPL_LOGI("Accuracy= %d\r\n", accuracy);
+    long data[3] = { 0 };
+    int8_t accuracy = { 0 };
+    unsigned long timestamp;
+    inv_get_compass_set(data, &accuracy, (inv_time_t*) &timestamp);
+    MPL_LOGI("Compass: %7.4f %7.4f %7.4f ",
+            data[0]/65536.f, data[1]/65536.f, data[2]/65536.f);
+    MPL_LOGI("Accuracy= %d\r\n", accuracy);
 
 }
 #endif
@@ -293,7 +294,7 @@ static void setup_gyro(void)
 #endif
 
     mpu_set_sensors(mask);
-		
+        
     mpu_configure_fifo(mask);
     if (lp_accel_was_on) {
         unsigned short rate;
@@ -334,22 +335,22 @@ static void tap_cb(unsigned char direction, unsigned char count)
 
 static void android_orient_cb(unsigned char orientation)
 {
-	switch (orientation) {
-	case ANDROID_ORIENT_PORTRAIT:
+    switch (orientation) {
+    case ANDROID_ORIENT_PORTRAIT:
         MPL_LOGI("Portrait\n");
         break;
-	case ANDROID_ORIENT_LANDSCAPE:
+    case ANDROID_ORIENT_LANDSCAPE:
         MPL_LOGI("Landscape\n");
         break;
-	case ANDROID_ORIENT_REVERSE_PORTRAIT:
+    case ANDROID_ORIENT_REVERSE_PORTRAIT:
         MPL_LOGI("Reverse Portrait\n");
         break;
-	case ANDROID_ORIENT_REVERSE_LANDSCAPE:
+    case ANDROID_ORIENT_REVERSE_LANDSCAPE:
         MPL_LOGI("Reverse Landscape\n");
         break;
-	default:
-		return;
-	}
+    default:
+        return;
+    }
 }
 
 
@@ -364,7 +365,7 @@ static inline void run_self_test(void)
     result = mpu_run_self_test(gyro, accel);
 #endif
     if (result == 0x7) {
-	MPL_LOGI("Passed!\n");
+    MPL_LOGI("Passed!\n");
         MPL_LOGI("accel: %7.4f %7.4f %7.4f\n",
                     accel[0]/65536.f,
                     accel[1]/65536.f,
@@ -383,10 +384,10 @@ static inline void run_self_test(void)
         unsigned char i = 0;
 
         for(i = 0; i<3; i++) {
-        	gyro[i] = (long)(gyro[i] * 32.8f); //convert to +-1000dps
-        	accel[i] *= 2048.f; //convert to +-16G
-        	accel[i] = accel[i] >> 16;
-        	gyro[i] = (long)(gyro[i] >> 16);
+            gyro[i] = (long)(gyro[i] * 32.8f); //convert to +-1000dps
+            accel[i] *= 2048.f; //convert to +-16G
+            accel[i] = accel[i] >> 16;
+            gyro[i] = (long)(gyro[i] >> 16);
         }
 
         mpu_set_gyro_bias_reg(gyro);
@@ -400,21 +401,21 @@ static inline void run_self_test(void)
         /* Push the calibrated data to the MPL library.
          *
          * MPL expects biases in hardware units << 16, but self test returns
-		 * biases in g's << 16.
-		 */
-    	unsigned short accel_sens;
-    	float gyro_sens;
+         * biases in g's << 16.
+         */
+        unsigned short accel_sens;
+        float gyro_sens;
 
-		mpu_get_accel_sens(&accel_sens);
-		accel[0] *= accel_sens;
-		accel[1] *= accel_sens;
-		accel[2] *= accel_sens;
-		inv_set_accel_bias(accel, 3);
-		mpu_get_gyro_sens(&gyro_sens);
-		gyro[0] = (long) (gyro[0] * gyro_sens);
-		gyro[1] = (long) (gyro[1] * gyro_sens);
-		gyro[2] = (long) (gyro[2] * gyro_sens);
-		inv_set_gyro_bias(gyro, 3);
+        mpu_get_accel_sens(&accel_sens);
+        accel[0] *= accel_sens;
+        accel[1] *= accel_sens;
+        accel[2] *= accel_sens;
+        inv_set_accel_bias(accel, 3);
+        mpu_get_gyro_sens(&gyro_sens);
+        gyro[0] = (long) (gyro[0] * gyro_sens);
+        gyro[1] = (long) (gyro[1] * gyro_sens);
+        gyro[2] = (long) (gyro[2] * gyro_sens);
+        inv_set_gyro_bias(gyro, 3);
 #endif
     }
     else {
@@ -429,9 +430,9 @@ static inline void run_self_test(void)
 }
 
 static void handle_input(void)
-{	
-		//char c = HAL_UART_Receive(&huart2,(uint8_t *)&c,1,100);
-		char c=HAL_UART_Receive_IT(&huart2,(uint8_t *)&c,1);
+{   
+        //char c = HAL_UART_Receive(&huart2,(uint8_t *)&c,1,100);
+        char c=HAL_UART_Receive_IT(&huart2,(uint8_t *)&c,1);
     switch (c) {
     /* These commands turn off individual sensors. */
     case '8':
@@ -485,9 +486,9 @@ static void handle_input(void)
         hal.report ^= PRINT_GRAVITY_VECTOR;
         break;
 #ifdef COMPASS_ENABLED
-	case 'w':
-		send_status_compass();
-		break;
+    case 'w':
+        send_status_compass();
+        break;
 #endif
     /* This command prints out the value of each gyro register for debugging.
      * If logging is disabled, this function has no effect.
@@ -579,7 +580,7 @@ static void handle_input(void)
         inv_set_gyro_sample_rate(10000L);
         inv_set_accel_sample_rate(10000L);
         break;
-	case ',':
+    case ',':
         /* Set hardware to interrupt on gesture event only. This feature is
          * useful for keeping the MCU asleep until the DMP detects as a tap or
          * orientation event.
@@ -642,9 +643,9 @@ static void handle_input(void)
         break;
     case 'm':
         /* Test the motion interrupt hardware feature. */
-	#ifndef MPU6050 // not enabled for 6050 product
-	hal.motion_int_mode = 1;
-	#endif 
+    #ifndef MPU6050 // not enabled for 6050 product
+    hal.motion_int_mode = 1;
+    #endif 
         break;
 
     case 'v':
@@ -689,6 +690,7 @@ static void MX_GPIO_Init(void);
 static void MX_I2C2_Init(void);
 static void MX_SPI3_Init(void);
 static void MX_USART2_UART_Init(void);
+static void MX_DMA_Init(void);
 static void MX_USART1_UART_Init(void);
 void USART1_IRQHandler(void);
 
@@ -701,28 +703,29 @@ void USART1_IRQHandler(void);
   * @retval None
   */
   unsigned char who_am_i = 0x01;
-	
-	
-	#define SPI_ENABLE HAL_GPIO_WritePin(GPIOA, GPIO_PIN_15, GPIO_PIN_RESET)
-	#define SPI_DISABLE HAL_GPIO_WritePin(GPIOA, GPIO_PIN_15, GPIO_PIN_SET)
+    
+    
+    #define SPI_ENABLE HAL_GPIO_WritePin(GPIOA, GPIO_PIN_15, GPIO_PIN_RESET)
+    #define SPI_DISABLE HAL_GPIO_WritePin(GPIOA, GPIO_PIN_15, GPIO_PIN_SET)
 
 int t=1;
 int main(void)
 {
-	HAL_Init();
+    HAL_Init();
 
   SystemClock_Config();
 
-	MX_GPIO_Init();
+    MX_GPIO_Init();
   MX_I2C2_Init();
   MX_SPI3_Init();
   MX_USART2_UART_Init();
-	MX_USART1_UART_Init();
+    MX_DMA_Init();
+    MX_USART1_UART_Init();
 
-	Sensors_SPI_ReadRegister_X(0,0x75,1,&who_am_i);
+    Sensors_SPI_ReadRegister_X(0,0x75,1,&who_am_i);
 
-		inv_error_t result;
-		unsigned char accel_fsr,  new_temp = 0;
+        inv_error_t result;
+        unsigned char accel_fsr,  new_temp = 0;
     unsigned short gyro_rate, gyro_fsr;
     unsigned long timestamp;
     struct int_param_s int_param;
@@ -730,19 +733,19 @@ int main(void)
     unsigned char new_compass = 0;
     unsigned short compass_fsr;
 #endif
-	 
+     
   result = mpu_init(&int_param);
-	
+    
   if (result) {
       MPL_LOGE("Could not initialize gyro.\n");
   }
-	
-	
+    
+    
   result = inv_init_mpl();
   if (result) {
       MPL_LOGE("Could not initialize MPL.\n");
   }
-	
+    
 
     /* Compute 6-axis and 9-axis quaternions. */
     inv_enable_quaternion();
@@ -780,9 +783,9 @@ int main(void)
 
     mpu_configure_fifo(INV_XYZ_GYRO | INV_XYZ_ACCEL);
     mpu_set_sample_rate(DEFAULT_MPU_HZ);
-	
-	
-	
+    
+    
+    
 #ifdef COMPASS_ENABLED
    
     mpu_set_compass_sample_rate(1000 / COMPASS_READ_MS);
@@ -792,7 +795,7 @@ int main(void)
     mpu_get_sample_rate(&gyro_rate);
     mpu_get_gyro_fsr(&gyro_fsr);
     mpu_get_accel_fsr(&accel_fsr);
-		
+        
 #ifdef COMPASS_ENABLED
     mpu_get_compass_fsr(&compass_fsr);
 #endif
@@ -804,12 +807,12 @@ int main(void)
     inv_set_compass_sample_rate(COMPASS_READ_MS * 1000L);
 #endif
   
-		 
+         
     inv_set_gyro_orientation_and_scale( inv_orientation_matrix_to_scalar(gyro_pdata.orientation), (long)gyro_fsr<<15);
-		
+        
     inv_set_accel_orientation_and_scale( inv_orientation_matrix_to_scalar(gyro_pdata.orientation),(long)accel_fsr<<15);
-		
-		
+        
+        
    #ifdef COMPASS_ENABLED
     inv_set_compass_orientation_and_scale( inv_orientation_matrix_to_scalar(compass_pdata.orientation),(long)compass_fsr<<15);
    #endif
@@ -830,8 +833,8 @@ int main(void)
     hal.next_temp_ms = 0;
 
   /* Compass reads are handled by scheduler. */
-		//timestamp=HAL_GetTick();
-		/* To initialize the DMP:
+        //timestamp=HAL_GetTick();
+        /* To initialize the DMP:
      * 1. Call dmp_load_motion_driver_firmware(). This pushes the DMP image in
      *    inv_mpu_dmp_motion_driver.h into the MPU memory.
      * 2. Push the gyro and accel orientation matrix to the DMP.
@@ -861,14 +864,14 @@ int main(void)
      * DMP_FEATURE_SEND_CAL_GYRO: Add calibrated gyro data to the FIFO. Cannot
      * be used in combination with DMP_FEATURE_SEND_RAW_GYRO.
      */
-		get_tick_count(&timestamp);
+        get_tick_count(&timestamp);
 
     dmp_load_motion_driver_firmware();
     dmp_set_orientation(inv_orientation_matrix_to_scalar(gyro_pdata.orientation));
     dmp_register_tap_cb(tap_cb);
     dmp_register_android_orient_cb(android_orient_cb);
-    		
-		
+            
+        
     hal.dmp_features = DMP_FEATURE_6X_LP_QUAT | DMP_FEATURE_TAP |
         DMP_FEATURE_ANDROID_ORIENT | DMP_FEATURE_SEND_RAW_ACCEL | DMP_FEATURE_SEND_CAL_GYRO |
         DMP_FEATURE_GYRO_CAL;
@@ -876,35 +879,34 @@ int main(void)
     dmp_set_fifo_rate(DEFAULT_MPU_HZ);
     mpu_set_dmp_state(1);
     hal.dmp_on = 1;
-		__HAL_UART_ENABLE_IT(&huart2, UART_IT_RXNE);
-		__HAL_UART_ENABLE_IT(&huart2, UART_IT_TC);
-		HAL_UART_Receive_IT(&huart1, &rx_data, 1);
+        __HAL_UART_ENABLE_IT(&huart2, UART_IT_RXNE);
+        __HAL_UART_ENABLE_IT(&huart2, UART_IT_TC);
+        HAL_UART_Receive_DMA(&huart1, &rx_data, 1);
 
-	
+    
   while(1){
 
-			if(	HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_8) == RESET && status == 0 )
-			{
-				
-						sprintf(str,"{%ld,%ld,%ld,%ld}\n",data[0],data[1],data[2],data[3]);
-						HAL_UART_Transmit(&huart1,(uint8_t*)str, strlen(str),100);		
-						status = 1;
-					
-					//		sprintf(str,"{%d,%d,%d,%d}\n",a,b,c,d);
-				}
+            if( HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_8) == RESET && status == 0 )
+            {
+                    sprintf(str,"{%ld,%ld,%ld,%ld}\n",data[0],data[1],data[2],data[3]);
+                    HAL_UART_Transmit(&huart1,(uint8_t*)str, strlen(str),100);      
+                    status = 1;
+                    //      sprintf(str,"{%d,%d,%d,%d}\n",a,b,c,d);
+                }
+            
     unsigned long sensor_timestamp;
     int new_data = 0;
 
-		//if(USART_GetITStatus(&huart2, UART_IT_RXNE))
-		if(__HAL_UART_GET_IT_SOURCE(&huart2,UART_IT_RXNE))
-		{	
-			__HAL_UART_CLEAR_FLAG(&huart2,UART_IT_RXNE);
-//			//USART_ClearITPendingBit(&huart2,UART_IT_RXNE);
-				handle_input();
-		
-		}
-			get_tick_count(&timestamp);
-			
+        //if(USART_GetITStatus(&huart2, UART_IT_RXNE))
+        if(__HAL_UART_GET_IT_SOURCE(&huart2,UART_IT_RXNE))
+        {   
+            __HAL_UART_CLEAR_FLAG(&huart2,UART_IT_RXNE);
+//          //USART_ClearITPendingBit(&huart2,UART_IT_RXNE);
+                handle_input();
+        
+        }
+            get_tick_count(&timestamp);
+            
 
 #ifdef COMPASS_ENABLED
         /* We're not using a data ready interrupt for the compass, so we'll
@@ -912,7 +914,7 @@ int main(void)
          */
         if ((timestamp > hal.next_compass_ms) && !hal.lp_accel_mode &&
             hal.new_gyro && (hal.sensors & COMPASS_ON))
-				{
+                {
             hal.next_compass_ms = timestamp + COMPASS_READ_MS;
             new_compass = 1;
         }
@@ -943,7 +945,7 @@ int main(void)
     }     
 
     if (hal.new_gyro && hal.lp_accel_mode) 
-			{
+            {
             short accel_short[3];
             long accel[3];
             mpu_get_accel_reg(accel_short, &sensor_timestamp);
@@ -954,7 +956,7 @@ int main(void)
             new_data = 1;
             hal.new_gyro = 0;
        } 
-		else if (hal.new_gyro && hal.dmp_on) {
+        else if (hal.new_gyro && hal.dmp_on) {
             short gyro[3], accel_short[3], sensors;
             unsigned char more;
             long accel[3], quat[4], temperature;
@@ -984,8 +986,7 @@ int main(void)
                     inv_build_temp(temperature, sensor_timestamp);
                 }
             }
-						//TODO
-						
+                        //TODO
 
             if (sensors & INV_XYZ_ACCEL) {
                 accel[0] = (long)accel_short[0];
@@ -1050,20 +1051,20 @@ int main(void)
 #endif
         if (new_data) {
             inv_execute_on_data();
-					/* This function reads bias-compensated sensor data and sensor
-			 * fusion outputs from the MPL. The outputs are formatted as seen
-			 * in eMPL_outputs.c. This function only needs to be called at the
-			 * rate requested by the host.
-			 */
+                    /* This function reads bias-compensated sensor data and sensor
+             * fusion outputs from the MPL. The outputs are formatted as seen
+             * in eMPL_outputs.c. This function only needs to be called at the
+             * rate requested by the host.
+             */
          
             read_from_mpl();
         }
-				
-			
+                
+            
     }
  
-	
-	}
+    
+    }
 
 
 
@@ -1075,35 +1076,74 @@ int main(void)
   */
 
 
+//void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+//{
+//  
+//  if (huart->Instance==huart1.Instance)
+//  {
+//      if(rx_index==0)
+//      {
+//          for(int i=0;i<256;i++)
+//              {
+//                  rx_buffer[i]=0;
+//              }               
+//      }   
+
+//  if(rx_data!=13)
+//  {
+//      rx_buffer[rx_index++]=rx_data;
+//  }
+//      else
+//      {
+//          rx_index=0;
+//          HAL_UART_Transmit(&huart1,rx_buffer,sizeof(rx_buffer),100);
+//      }
+//      HAL_UART_Receive_IT(&huart1, &rx_data, 1);
+//      
+//  }
+//}
+
+
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
-	
-	if (huart->Instance==huart1.Instance)
-	{
-		if(rx_index==0)
-		{
-			for(int i=0;i<256;i++)
-				{
-					rx_buffer[i]=0;
-				}				
-		}	
+    
+    if (huart->Instance==huart1.Instance)
+    {
+        if(rx_index==0)
+        {
+            for(int i=0;i<256;i++)
+                {
+                    rx_buffer[i]=0;
+                }               
+        }   
 
-	if(rx_data!=13)
-	{
-		rx_buffer[rx_index++]=rx_data;
-	}
-		else
-		{
-			rx_index=0;
-			HAL_UART_Transmit(&huart1,rx_buffer,sizeof(rx_buffer),100);
-		}
-		HAL_UART_Receive_IT(&huart1, &rx_data, 1);
-		
-	}
+    if(rx_data!=13)
+    {
+        rx_buffer[rx_index++]=rx_data;
+    }
+        else
+        {
+            rx_index=0;
+            HAL_UART_Transmit(&huart1,rx_buffer,sizeof(rx_buffer),100);
+        }
+        HAL_UART_Receive_DMA(&huart1, &rx_data, 1);
+    //  HAL_UART_Receive_IT(&huart1, &rx_data, 1);
+        
+        char* a=strstr((char*)rx_buffer,"Getdata");
+    
+        if(a != NULL)
+        {
+            status=0;
+        //memset(rx_buffer,0,256);
+            rx_index=0;
+        
+        }
+        
+    }
 }
 
-	
-	
+    
+    
 void SystemClock_Config(void)
 {
 
@@ -1188,9 +1228,9 @@ static void MX_SPI3_Init(void)
   hspi3.Init.Mode = SPI_MODE_MASTER;
   hspi3.Init.Direction = SPI_DIRECTION_2LINES;
   hspi3.Init.DataSize = SPI_DATASIZE_8BIT;
-	hspi3.Init.CLKPolarity = SPI_POLARITY_HIGH;
+    hspi3.Init.CLKPolarity = SPI_POLARITY_HIGH;
   hspi3.Init.CLKPhase = SPI_PHASE_2EDGE;
-	hspi3.Init.NSS = SPI_NSS_SOFT;
+    hspi3.Init.NSS = SPI_NSS_SOFT;
   hspi3.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_256;
   hspi3.Init.FirstBit = SPI_FIRSTBIT_MSB;
   hspi3.Init.TIMode = SPI_TIMODE_DISABLE;
@@ -1234,13 +1274,26 @@ static void MX_USART1_UART_Init(void)
   huart1.Init.Parity = UART_PARITY_NONE;
   huart1.Init.Mode = UART_MODE_TX_RX;
   huart1.Init.HwFlowCtl = UART_HWCONTROL_NONE;
-	huart1.Init.OverSampling = UART_OVERSAMPLING_16;
+    huart1.Init.OverSampling = UART_OVERSAMPLING_16;
   if (HAL_UART_Init(&huart1) != HAL_OK)
   {
     _Error_Handler(__FILE__, __LINE__);
   }
 
 }
+
+static void MX_DMA_Init(void) 
+{
+  /* DMA controller clock enable */
+  __HAL_RCC_DMA2_CLK_ENABLE();
+
+  /* DMA interrupt init */
+  /* DMA2_Stream2_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA2_Stream2_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(DMA2_Stream2_IRQn);
+
+}
+
 /** Configure pins as 
         * Analog 
         * Input 
@@ -1250,13 +1303,13 @@ static void MX_USART1_UART_Init(void)
 */
 static void MX_GPIO_Init(void)
 {
-	
-	GPIO_InitTypeDef GPIO_InitStruct;
+    
+    GPIO_InitTypeDef GPIO_InitStruct;
 
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOC_CLK_ENABLE();
-	__HAL_RCC_GPIOB_CLK_ENABLE();
+    __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOA, GPIO_PIN_15, GPIO_PIN_SET);
@@ -1267,45 +1320,45 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-	
-	GPIO_InitStruct.Pin = GPIO_PIN_5;
+    
+    GPIO_InitStruct.Pin = GPIO_PIN_5;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-	
-	
-	// External Interrupt
-	/*Configure GPIO pin : PC13 */
+    
+    
+    // External Interrupt
+    /*Configure GPIO pin : PC13 */
   GPIO_InitStruct.Pin = GPIO_PIN_13;
-	GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
-	//GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
-	GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+    //GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
-	
-	//  /*Configure GPIO pin : PA1 */
+    
+    //  /*Configure GPIO pin : PA1 */
   GPIO_InitStruct.Pin = GPIO_PIN_1;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-	
-	/* EXTI interrupt init*/
+    
+    /* EXTI interrupt init*/
   HAL_NVIC_SetPriority(EXTI15_10_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
-	
-	  /* EXTI interrupt init*/
+    
+      /* EXTI interrupt init*/
   HAL_NVIC_SetPriority(EXTI1_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(EXTI1_IRQn);
-	
+    
 }
 
 /* USER CODE BEGIN 4 */
 //char* num2str(long num){
-//	for (long i=0;i<16;i++){
-//		result[i]= num%10 +48;
-//		num = num / 10;
-//	}
-//	return result;
+//  for (long i=0;i<16;i++){
+//      result[i]= num%10 +48;
+//      num = num / 10;
+//  }
+//  return result;
 //}
 //long s = 123;
 

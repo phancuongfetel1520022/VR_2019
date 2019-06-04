@@ -52,9 +52,10 @@
 * @brief This function handles Non maskable interrupt.
 
 */
-extern UART_HandleTypeDef huart2;
+extern DMA_HandleTypeDef hdma_usart1_rx;
 extern UART_HandleTypeDef huart1;
 
+extern UART_HandleTypeDef huart2;
 extern uint8_t status;
 extern uint8_t rx_buffer[128],rx_index,rx_data;
 
@@ -199,23 +200,23 @@ void SysTick_Handler(void)
 void EXTI15_10_IRQHandler(void)
 {
 //  gyro_data_ready_cb();
-//	HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_13);
-	
-	if (__HAL_GPIO_EXTI_GET_IT (GPIO_PIN_13))
-	{
-		gyro_data_ready_cb();
-		
-		__HAL_GPIO_EXTI_CLEAR_IT (GPIO_PIN_13);
-	}
+//  HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_13);
+  
+  if (__HAL_GPIO_EXTI_GET_IT (GPIO_PIN_13))
+  {
+    gyro_data_ready_cb();
+    
+    __HAL_GPIO_EXTI_CLEAR_IT (GPIO_PIN_13);
+  }
 }
-	
+  
 
 
 void USART2_IRQHandler(void)
 {
   HAL_UART_IRQHandler(&huart2);
-	
-	//HAL_NVIC_ClearPendingIRQ(EXTI15_10_IRQn);
+  
+  //HAL_NVIC_ClearPendingIRQ(EXTI15_10_IRQn);
 }
 /**
 * @brief This function handles USART1 global interrupt.
@@ -224,18 +225,35 @@ void USART1_IRQHandler(void)
 {
   HAL_UART_IRQHandler(&huart1);
 
-	char* a=strstr((char*)rx_buffer,"Getdata");
-	
-	if(a != NULL)
-	{
-		status=0;
-		//memset(rx_buffer,0,256);
-		rx_index=0;
-		
-	}
+//  char* a=strstr((char*)rx_buffer,"Getdata");
+//  
+//  if(a != NULL)
+//  {
+//    status=0;
+//    //memset(rx_buffer,0,256);
+//    rx_index=0;
+//    
+//  }
 
   /* USER CODE END USART1_IRQn 1 */
 }
+
+/**
+* @brief This function handles DMA2 stream2 global interrupt.
+*/
+void DMA2_Stream2_IRQHandler(void)
+{
+  /* USER CODE BEGIN DMA2_Stream2_IRQn 0 */
+
+  /* USER CODE END DMA2_Stream2_IRQn 0 */
+  HAL_DMA_IRQHandler(&hdma_usart1_rx);
+  /* USER CODE BEGIN DMA2_Stream2_IRQn 1 */
+
+  /* USER CODE END DMA2_Stream2_IRQn 1 */
+}
+
+
+
 /******************************************************************************/
 /* STM32F4xx Peripheral Interrupt Handlers                                    */
 /* Add here the Interrupt Handlers for the used peripherals.                  */
