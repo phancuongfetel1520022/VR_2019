@@ -247,6 +247,15 @@ void DMA2_Stream2_IRQHandler(void)
 
   /* USER CODE END DMA2_Stream2_IRQn 0 */
   HAL_DMA_IRQHandler(&hdma_usart1_rx);
+      char* a=strstr((char*)rx_buffer,"Getdata");
+    
+      if(a != NULL)
+      {
+        status=0;
+      //memset(rx_buffer,0,256);
+        rx_index=0;
+      
+      }
   /* USER CODE BEGIN DMA2_Stream2_IRQn 1 */
 
   /* USER CODE END DMA2_Stream2_IRQn 1 */
