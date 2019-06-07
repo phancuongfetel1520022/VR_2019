@@ -57,7 +57,7 @@ extern UART_HandleTypeDef huart1;
 
 extern UART_HandleTypeDef huart2;
 extern uint8_t status;
-extern uint8_t rx_buffer[128],rx_index,rx_data;
+extern uint8_t rx_buffer[256],rx_index,rx_data;
 
 void NMI_Handler(void)
 {

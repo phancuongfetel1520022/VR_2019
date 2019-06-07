@@ -59,16 +59,10 @@
 
     /* Private variables ---------------------------------------------------------*/
 
-        uint8_t rx_buffer[256],rx_index,rx_data;
-        
-        char str[45];
+    char str[45];
     long data[4];
-            
-    
-        char abc[100];
-    //  uint8_t a[10]="Cuong",b[10]="Fetel",c[10]="HcmusHcmus",d[10]="sssss";
-        uint8_t status=1;
-
+    uint8_t status=1;
+		uint8_t rx_buffer[256],rx_index,rx_data;
 
     struct rx_s {
             unsigned char header[3];
